@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/productos")
+@CrossOrigin(value = "http://localhost:4200")
 public class ProductoController {
     private final ProductoService productoService;
 
@@ -30,6 +31,11 @@ public class ProductoController {
     @GetMapping("/{id}")
     public ResponseEntity<Optional<ProductoDTO>> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(productoService.obtenerPorId(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductoDTO> actualizarProducto(@PathVariable Long id, @RequestBody ProductoDTO productoDTO) {
+        return ResponseEntity.ok(productoService.actualizarProducto(id, productoDTO));
     }
 
     @DeleteMapping("/{id}")

@@ -5,9 +5,13 @@ import finance.finanza.modelo.Producto;
 import finance.finanza.repositorio.ClienteRepository;
 import finance.finanza.repositorio.ProductoRepository;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+
 
 @Service
 public class ProductoService {
@@ -37,11 +41,23 @@ public class ProductoService {
         producto.setSaldo(productoDTO.getSaldo());
         producto.setExentaGMF(productoDTO.isExentaGMF());
 
-        if (producto.getTipoCuenta().equals("ahorros") && producto.getSaldo() < 0) {
-            throw new IllegalArgumentException("Las cuentas de ahorro no pueden tener saldo negativo");
-        }
-
         return convertirADTO(productoRepository.save(producto));
+    }
+
+    public ProductoDTO actualizarProducto(Long id, ProductoDTO productoDTO) {
+        return productoRepository.findById(id).map(producto -> {
+            if ("Cancelada".equalsIgnoreCase(productoDTO.getEstado()) && producto.getSaldo() != 0.0) {
+                throw new IllegalStateException("No se puede cancelar la cuenta con saldo diferente de cero.");
+            }
+
+            producto.setTipoCuenta(productoDTO.getTipoCuenta());
+            producto.setEstado(productoDTO.getEstado());
+            producto.setSaldo(productoDTO.getSaldo());
+            producto.setExentaGMF(productoDTO.isExentaGMF());
+            producto.setFechaModificacion(LocalDate.now());
+
+            return convertirADTO(productoRepository.save(producto));
+        }).orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
     }
 
     public void eliminarProducto(Long id) {
